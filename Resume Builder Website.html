@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Resume</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #141e30, #243b55);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+    }
+
+    h1 {
+      color: #00e6e6;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 1rem;
+      background: #00e6e6;
+      color: #000;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 10px;
+    }
+
+    form {
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+      width: 300px;
+      background: #1c2a3a;
+      padding: 20px;
+      border-radius: 10px;
+    }
+
+    label {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+
+    input, textarea {
+      padding: 8px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 5px;
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .row input {
+      flex: 1;
+    }
+
+    #resume {
+      display: none;
+      background: #fff;
+      color: #000;
+      padding: 20px;
+      border-radius: 10px;
+      margin-top: 20px;
+      width: 100%;
+      max-width: 700px;
+    }
+
+    #resume img {
+      max-width: 150px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+
+    #actionButtons {
+      display: none;
+      margin-top: 10px;
+    }
+
+    canvas {
+      max-width: 500px;
+      margin: 20px auto;
+    }
+
+    @media print {
+      button, #formContainer, #actionButtons {
+        display: none !important;
+      }
+
+      body {
+        background: #fff;
+        color: #000;
+      }
+
+      #resume {
+        display: block !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Resume</h1>
+  <button onclick="document.getElementById('formContainer').style.display='flex'">Create Resume</button>
+
+  <form id="formContainer" onsubmit="generateResume(event)">
+    <label>Upload Photo:</label>
+    <input type="file" id="photo" accept="image/*" required />
+
+    <label>Name:</label>
+    <input type="text" id="name" required />
+
+    <label>Age:</label>
+    <input type="number" id="age" />
+
+    <label>Course:</label>
+    <input type="text" id="course" />
+
+    <label>Email:</label>
+    <input type="email" id="email" />
+
+    <label>Phone:</label>
+    <input type="tel" id="phone" />
+
+    <label>Address:</label>
+    <textarea id="address"></textarea>
+
+    <label>Skills:</label>
+    <input type="text" id="skills" />
+
+    <label>Experience:</label>
+    <input type="text" id="experience" />
+
+    <label>Projects:</label>
+    <textarea id="projects"></textarea>
+
+    <label>Post Graduation:</label>
+    <div class="row">
+      <input type="text" id="pg" />
+      <input type="text" id="pgMarks" placeholder="% Marks" />
+    </div>
+
+    <label>Course:</label>
+    <div class="row">
+      <input type="text" id="courseName" />
+      <input type="text" id="courseMarks" placeholder="% Marks" />
+    </div>
+
+    <label>Graduation:</label>
+    <div class="row">
+      <input type="text" id="grad" />
+      <input type="text" id="gradMarks" placeholder="% Marks" />
+    </div>
+
+    <label>Intermediate:</label>
+    <div class="row">
+      <input type="text" id="inter" />
+      <input type="text" id="interMarks" placeholder="% Marks" />
+    </div>
+
+    <label>10th Class:</label>
+    <div class="row">
+      <input type="text" id="ssc" />
+      <input type="text" id="sscMarks" placeholder="% Marks" />
+    </div>
+
+    <label>Achievements:</label>
+    <textarea id="achievements"></textarea>
+
+    <label>Career Objective:</label>
+    <textarea id="objective"></textarea>
+
+    <button type="submit">Submit</button>
+  </form>
+
+  <div id="resumeContainer">
+    <div id="resume"></div>
+    <div id="actionButtons">
+      <button onclick="downloadPDF()">Download Resume</button>
+      <button onclick="printResume()">Print Resume</button>
+    </div>
+  </div>
+
+  <script>
+    let resumeName = "resume";
+
+    function generateResume(event) {
+      event.preventDefault();
+      const reader = new FileReader();
+      const file = document.getElementById('photo').files[0];
+
+      const name = document.getElementById('name').value.trim();
+      resumeName = name ? name.replace(/\s+/g, '_').toLowerCase() + "_resume" : "resume";
+
+      reader.onloadend = function () {
+        const photoURL = reader.result;
+        const age = document.getElementById('age').value.trim();
+        const course = document.getElementById('course').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const phone = document.getElementById('phone').value.trim();
+        const address = document.getElementById('address').value.trim();
+        const skills = document.getElementById('skills').value.trim();
+        const experience = document.getElementById('experience').value.trim();
+        const projects = document.getElementById('projects').value.trim();
+        const pg = document.getElementById('pg').value.trim();
+        const pgMarks = document.getElementById('pgMarks').value.trim();
+        const courseName = document.getElementById('courseName').value.trim();
+        const courseMarks = document.getElementById('courseMarks').value.trim();
+        const grad = document.getElementById('grad').value.trim();
+        const gradMarks = document.getElementById('gradMarks').value.trim();
+        const inter = document.getElementById('inter').value.trim();
+        const interMarks = document.getElementById('interMarks').value.trim();
+        const ssc = document.getElementById('ssc').value.trim();
+        const sscMarks = document.getElementById('sscMarks').value.trim();
+        const achievements = document.getElementById('achievements').value.trim();
+        const objective = document.getElementById('objective').value.trim();
+
+        let resumeHTML = `<div style="display: flex; align-items: flex-start; gap: 20px;">
+          <img src="${photoURL}" alt="Profile Picture" />
+          ${address ? `
+            <div style="font-size: 0.85rem; color: #444; display: flex; flex-direction: column; margin-top: 5px;">
+              <span style="display: flex; align-items: center; gap: 5px;">
+                <span style="font-size: 1rem;">📍</span>
+                <strong style="font-size: 0.85rem;">Address:</strong>
+              </span>
+              <span style="margin-left: 20px;">${address}</span>
+            </div>
+          ` : ""}
+        </div>`;
+
+        if (name) resumeHTML += `<h2>${name}'s Resume</h2>`;
+        if (age) resumeHTML += `<p><strong>Age:</strong> ${age}</p>`;
+        if (course) resumeHTML += `<p><strong>Course:</strong> ${course}</p>`;
+        if (email) resumeHTML += `<p><strong>Email:</strong> ${email}</p>`;
+        if (phone) resumeHTML += `<p><strong>Phone:</strong> ${phone}</p>`;
+        if (skills) resumeHTML += `<p><strong>Skills:</strong> ${skills}</p>`;
+        if (experience) resumeHTML += `<p><strong>Experience:</strong> ${experience}</p>`;
+        if (projects) resumeHTML += `<p><strong>Projects:</strong> ${projects}</p>`;
+
+        if (pg || courseName || grad || inter || ssc) {
+          resumeHTML += `<h3>Education</h3><ul>`;
+          if (pg) resumeHTML += `<li><strong>Post Graduation:</strong> ${pg} ${pgMarks ? ` - ${pgMarks}%` : ''}</li>`;
+          if (courseName) resumeHTML += `<li><strong>Course:</strong> ${courseName} ${courseMarks ? ` - ${courseMarks}%` : ''}</li>`;
+          if (grad) resumeHTML += `<li><strong>Graduation:</strong> ${grad} ${gradMarks ? ` - ${gradMarks}%` : ''}</li>`;
+          if (inter) resumeHTML += `<li><strong>Intermediate:</strong> ${inter} ${interMarks ? ` - ${interMarks}%` : ''}</li>`;
+          if (ssc) resumeHTML += `<li><strong>10th Class:</strong> ${ssc} ${sscMarks ? ` - ${sscMarks}%` : ''}</li>`;
+          resumeHTML += `</ul>`;
+        }
+
+        let radarLabels = [];
+        let radarData = [];
+
+        if (pg && pgMarks) { radarLabels.push("Post Graduation"); radarData.push(parseFloat(pgMarks)); }
+        if (courseName && courseMarks) { radarLabels.push("Course"); radarData.push(parseFloat(courseMarks)); }
+        if (grad && gradMarks) { radarLabels.push("Graduation"); radarData.push(parseFloat(gradMarks)); }
+        if (inter && interMarks) { radarLabels.push("Intermediate"); radarData.push(parseFloat(interMarks)); }
+        if (ssc && sscMarks) { radarLabels.push("10th Class"); radarData.push(parseFloat(sscMarks)); }
+
+        if (radarData.length > 0) {
+          resumeHTML += `<h3>Education Radar Chart</h3><canvas id="educationChart"></canvas>`;
+        }
+
+        if (achievements) resumeHTML += `<p><strong>Achievements:</strong> ${achievements}</p>`;
+        if (objective) resumeHTML += `<p><strong>Career Objective:</strong> ${objective}</p>`;
+
+        document.getElementById('resume').innerHTML = resumeHTML;
+        document.getElementById('resume').style.display = 'block';
+        document.getElementById('formContainer').style.display = 'none';
+        document.getElementById('actionButtons').style.display = 'flex';
+
+        if (radarData.length > 0) {
+          new Chart(document.getElementById("educationChart"), {
+            type: 'radar',
+            data: {
+              labels: radarLabels,
+              datasets: [{
+                label: '% Marks',
+                data: radarData,
+                fill: true,
+                backgroundColor: 'rgba(0, 166, 255, 0.2)',
+                borderColor: '#00aaff',
+                pointBackgroundColor: '#0077cc',
+              }]
+            },
+            options: {
+              responsive: true,
+              scales: {
+                r: {
+                  min: 0,
+                  max: 100,
+                  ticks: {
+                    stepSize: 20,
+                    color: "#000"
+                  },
+                  pointLabels: {
+                    color: "#000"
+                  },
+                  grid: {
+                    color: "#aaa"
+                  }
+                }
+              }
+            }
+          });
+        }
+      };
+
+      if (file) {
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function downloadPDF() {
+      const element = document.getElementById('resume');
+      html2pdf().set({
+        margin: 0.5,
+        filename: `${resumeName}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 1 },
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+      }).from(element).save();
+    }
+
+    function printResume() {
+      window.print();
+    }
+  </script>
+</body>
+</html>
